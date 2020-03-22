@@ -1,5 +1,5 @@
 To run this you'll need :
-- to have a discord bot and put his token in the int.py file
+- to have a discord bot and put his token in the init.py file
 - to create a empty folder called players
 - to have python 3.7 or more and the discord.py library
 

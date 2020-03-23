@@ -16,7 +16,7 @@ WEST = 4
 UP = 5
 DOWN = 6
 
-#### ! put the
+#### ! put your discord bot token here : ! ###
 TOKEN = ''
 
 global players_channels

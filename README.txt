@@ -1,7 +1,7 @@
 Version : 0.1.2 (24-03-2020) 
 
 To run this you'll need :
-- to have a discord bot and put his token in the init.py file
+- to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
 - to create a empty folder called players
 - to have python 3.7 or more and the discord.py library
 

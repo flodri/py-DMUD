@@ -74,7 +74,9 @@ def desc_room(player_id):
         r = [(p.x,p.y,p.z).__repr__(),'\n',room.desc]
         if len(room.players)>1: #since there's the player requesting the desc, it's always at least 1
             r.append('\nAre also present in the room :\n')
-            for player_in_room in room.players:
+            others = room.players.copy()
+            others.remove(player_id)
+            for player_in_room in others:
                 r.append(players[player_in_room].pseudo)
                 r.append('\n')
         return ''.join(r)
@@ -88,7 +90,7 @@ def movement(player_id,d):
     if   d==NORTH:
         if NORTH in world[p.inst][p.x,p.y,p.z].exits:
             warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
+            world[p.inst][p.x,p.y,p.z].players.remove(player_id)
             players[player_id].y+=1
             world[p.inst][p.x,p.y,p.z].players.add(player_id)
             warn_coming(player_id)
@@ -170,8 +172,8 @@ def cmd_interpreter(player_id,text,msg):
         sendTo.discard(player_id)
         if len(sendTo)==0:return "Nobody can hear you as you are alone."
         else:
-            msg=f'`{players[player_id].pseudo} : {str(msg)[1:]}`'
-            for player_in_room in sendTo:toSend.append(player_in_room,msg)
+            msg=f'`{players[player_id].pseudo} : {str(msg.content)[1:]}`'
+            for player_in_room in sendTo:toSend.append((player_in_room,msg))
             return msg
         
     ### The look command :
@@ -217,10 +219,11 @@ async def background_toSend():
     while not client.is_closed():
         try:
             if len(toSend)!=0:
+                print(toSend)
                 for m in toSend[:]:
-                    await joueurs_channels[m[0]].send(m[1])
+                    await players_channels[m[0]].send(m[1])
                     toSend.remove(m)#can't use pop and the index as toSend can be modified during the await    
-            await asyncio.sleep(0.2) #Repeat after 0.2 s
+            await asyncio.sleep(0.5) #Repeat after 0.2 s
         except:
             print("!!!!!!! backgroud toSend fait de la m*rde !!!!!!!'\n")
             await asyncio.sleep(0.1)

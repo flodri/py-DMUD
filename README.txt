@@ -7,6 +7,7 @@ To run this you'll need :
 
 When you have all of this simply run the MAIN.py file.
 
+If you want access to admin commands put your full discord pseudo in the admins set in admins.text
 
 Changelog :
 0.1.2 (24-03-2020)

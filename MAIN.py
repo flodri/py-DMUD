@@ -2,6 +2,7 @@
 #    https://discordapp.com/oauth2/authorize?client_id={CLIENTID}&scope=bot&permissions={PERMISSIONINT}
 #the permission int can be calculated on the dicord docs, I used this : 3397696
 
+from pathlib import Path
 from init import *
 
 class room():
@@ -208,7 +209,8 @@ def cmd_interpreter(player_id,text,msg):
 
 with open('world.txt', 'r') as fichier:
     world.update(eval(fichier.read()))
-    
+
+Path('./players').mkdir(exist_ok=True)    
 for p in os.listdir('./players'):
     load_player(p[:-4])
 

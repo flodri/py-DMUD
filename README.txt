@@ -1,8 +1,7 @@
-Version : 0.1.2 (24-03-2020) 
+Version : 0.1.3 (29-03-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
-- to create a empty folder called players
 - to have python 3.7 or more and the discord.py library
 
 When you have all of this simply run the MAIN.py file.
@@ -10,6 +9,8 @@ When you have all of this simply run the MAIN.py file.
 If you want access to admin commands put your full discord pseudo in the admins set in admins.text
 
 Changelog :
+0.1.3 (29-03-2020)
+  - no need to create the players folder anymore thanks to rrebrick
 0.1.2 (24-03-2020)
   - fixed a typo in background_toSend in MAIN.py which mad it bug
   - fixed a missing exit in the world.txt demo

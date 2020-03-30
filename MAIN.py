@@ -283,22 +283,39 @@ async def on_message(message):
         elif str(message.author) in admins:#admins is a set, so hashtable make this pretty fast
             if ("!quit" == msg) :
                 #Disconnect your bot.
+                await message.channel.send('Disconnecting.')
                 await client.close()
                 sys.exit()
                 
             elif ("!save" == msg):
-                #Save everything.   
+                #Save everything.
                 for p in players:p.save()
                 with open('world.txt', 'w') as fichier:
                     fichier.write(world.__repr__())
+                await message.channel.send('Save completed.')
                     
-            elif ("!save quit"):
+            elif ("!save quit" == msg):
                 #Save everything, then disconnect your bot.
                 for p in players:p.save()
                 with open('world.txt', 'w') as fichier:
                     fichier.write(world.__repr__())
+                await message.channel.send('Save completed.\nDisconnecting')
                 await client.close()
                 sys.exit()
+            
+            elif msg.startswith('!admin '):
+                #add a admin to your game, if he's already admin remove him
+                pseudo = msg[7:]
+                if pseudo in admins:
+                    admins.remove(pseudo)
+                    with open('admins.txt', 'w') as fichier:
+                        fichier.write(admins.__repr__())
+                else:
+                    admins.add(pseudo)
+                    with open('admins.txt', 'w') as fichier:
+                        fichier.write(admins.__repr__())
+                    await message.channel.send(f'{pseudo} is now a admin.')
+            
         else:
             if ("!who" == msg):
                 #print the pseudo of everyone online in the mud.

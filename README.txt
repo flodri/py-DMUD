@@ -1,4 +1,4 @@
-Version : 0.1.3 (29-03-2020) 
+Version : 0.1.4 (30-03-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -9,6 +9,10 @@ When you have all of this simply run the MAIN.py file.
 If you want access to admin commands put your full discord pseudo in the admins set in admins.text
 
 Changelog :
+0.1.4 (30-03-2020)
+  - fixed a bug with the "!save quit" command
+  - added feedback to all admin commands
+  - added the "!admins pseudo" command which add/remove admins without having to edit admins.txt
 0.1.3 (29-03-2020)
   - no need to create the players folder anymore thanks to rrebrick
 0.1.2 (24-03-2020)

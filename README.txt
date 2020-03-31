@@ -6,7 +6,8 @@ To run this you'll need :
 
 When you have all of this simply run the MAIN.py file.
 
-If you want access to admin commands put your full discord pseudo in the admins set in admins.text
+If you want access to admin commands put your full discord pseudo in the admins set in admins.txt
+(you'll be able to add admins with the !admin comand after that)
 
 Changelog :
 0.1.5 (31-03-2020):

@@ -59,12 +59,12 @@ def warn_leaving(player_id,d): #d for direction
     for player_in_room in world[p.inst][p.x,p.y,p.z].players: #Never empty, there's at least the one leaving
         if player_in_room!=player_id:
             #for just 2 string, + is faster than .join
-            if   d=='n':toSend.append((player_in_room,players[player_id].pseudo+" just left to the north."))
-            elif d=='s':toSend.append((player_in_room,players[player_id].pseudo+" just left to the south."))
-            elif d=='e':toSend.append((player_in_room,players[player_id].pseudo+" just left to the est."))
-            elif d=='o':toSend.append((player_in_room,players[player_id].pseudo+" just left to the west."))  
-            elif d=='u':toSend.append((player_in_room,players[player_id].pseudo+" just left up."))
-            elif d=='d':toSend.append((player_in_room,players[player_id].pseudo+" just left down."))          
+            if   d==NORTH:toSend.append((player_in_room,players[player_id].pseudo+" just left to the north."))
+            elif d==SOUTH:toSend.append((player_in_room,players[player_id].pseudo+" just left to the south."))
+            elif d==EST  :toSend.append((player_in_room,players[player_id].pseudo+" just left to the est."))
+            elif d==WEST :toSend.append((player_in_room,players[player_id].pseudo+" just left to the west."))  
+            elif d==UP   :toSend.append((player_in_room,players[player_id].pseudo+" just left up."))
+            elif d==DOWN :toSend.append((player_in_room,players[player_id].pseudo+" just left down."))          
 
 def desc_room(player_id):
     """return a description of the room ready to be send to the player
@@ -197,6 +197,7 @@ def cmd_interpreter(player_id,text,msg):
     elif text in{'d','down' }:d=DOWN
     if d:return movement(player_id,d)
 
+    #if the command is not recognised :
     return '?'
 
 

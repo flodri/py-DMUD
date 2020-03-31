@@ -19,7 +19,7 @@ Changelog :
 0.1.3 (29-03-2020)
   - no need to create the players folder anymore thanks to rrebrick
 0.1.2 (24-03-2020)
-  - fixed a typo in background_toSend in MAIN.py which mad it bug
+  - fixed a typo in background_toSend in MAIN.py which made it bug
   - fixed a missing exit in the world.txt demo
   - changed the desc_room function in MAIN.py to remove oneself from the desc when it display with others inside
 0.1.1 (24-03-2020)

@@ -216,7 +216,8 @@ for p in os.listdir('./players'):
     load_player(p[:-4])
 
 async def background_toSend():
-    """Primordial, envoie régulièrement les messages necessaire à envoyer"""
+    """Send regularly the messages stored in toSend to the corresponding players
+    """
     global toSend
     await client.wait_until_ready()
     while not client.is_closed():
@@ -226,9 +227,9 @@ async def background_toSend():
                 for m in toSend[:]:
                     await players_channels[m[0]].send(m[1])
                     toSend.remove(m)#can't use pop and the index as toSend can be modified during the await    
-            await asyncio.sleep(0.5) #Repeat after 0.2 s
+            await asyncio.sleep(0.5) #Repeat after 0.5 s
         except:
-            print("!!!!!!! backgroud toSend fait de la m*rde !!!!!!!'\n")
+            print("!!!!!!! backgroud_toSend is crashing !!!!!!!'\n")
             await asyncio.sleep(0.1)
             pass
 

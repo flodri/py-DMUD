@@ -1,4 +1,4 @@
-Version : 0.1.4 (30-03-2020) 
+Version : 0.1.5 (31-03-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -9,6 +9,9 @@ When you have all of this simply run the MAIN.py file.
 If you want access to admin commands put your full discord pseudo in the admins set in admins.text
 
 Changelog :
+0.1.5 (31-03-2020):
+  - fixed a stupid error in the warn_leaving function which was making it useless
+  - added some comments/modified docstring to help document
 0.1.4 (30-03-2020)
   - fixed a bug with the "!save quit" command
   - added feedback to all admin commands

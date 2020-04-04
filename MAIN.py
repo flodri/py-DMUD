@@ -245,7 +245,7 @@ async def on_message(message):
         print(message.content)
     except : print("##### !!! UN-PRINTABLE !!! #####")
     
-    if str(message.author) != "S.I.L.F.#4198":#otherwise it answer itself (-_-")
+    if message.author != client.user:#otherwise it answer itself (-_-")
         msg = str(message.content)
         
         if str(message.channel)[0:20]=='Direct Message with ':

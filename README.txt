@@ -1,4 +1,4 @@
-Version : 0.1.5 (31-03-2020) 
+Version : 0.1.6 (04-04-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -10,6 +10,8 @@ If you want access to admin commands put your full discord pseudo in the admins 
 (you'll be able to add admins with the !admin comand after that)
 
 Changelog :
+0.1.6 (04-04-2020) 
+  - thanks to rrebrick who made me notice it, there's no need anymore to type your bot username in some part of MAIN.py
 0.1.5 (31-03-2020):
   - fixed a stupid error in the warn_leaving function which was making it useless
   - added some comments/modified docstring to help document

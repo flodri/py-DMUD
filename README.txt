@@ -1,4 +1,4 @@
-Version : 0.1.6 (04-04-2020) 
+Version : 0.2.0 (06-04-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -10,6 +10,13 @@ If you want access to admin commands put your full discord pseudo in the admins 
 (you'll be able to add admins with the !admin comand after that)
 
 Changelog :
+0.2.0 (06-04-2020)
+  - I finally added the only update I kinda promised, OLC stuff, to be precise :
+    - a !create command, to create a room to the passed coordinates
+    - a !exits command to change a room exits
+    - a !desc command to change a room desc
+    - a !look command, to allow a admin to see the room as if he was a player inside it
+  - fixed me being stupid and not initialising some stuff wich made most admin commands bug
 0.1.6 (04-04-2020) 
   - thanks to rrebrick who made me notice it, there's no need anymore to type your bot username in some part of MAIN.py
 0.1.5 (31-03-2020):

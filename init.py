@@ -24,7 +24,7 @@ WAITING_EXITS = 1
 short_to_directions={'n':NORTH,'e':EST,'s':SOUTH,'w':WEST,'u':UP,'d':DOWN}#for the !exits command
 
 #### ! put your discord bot token here : ! ###
-TOKEN = 'NTc0NjM1MjI5OTQwMjg1NDQx.XM8h7g.wI9Gvv5CSN4yP2W2TbrUIlb1eJY'
+TOKEN = ''
 
 global players_channels
 players_channels = {}

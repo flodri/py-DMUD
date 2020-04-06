@@ -33,6 +33,21 @@ class player():
     def __repr__(self):
         return f'player(**{self.__dict__.__repr__()})'
 
+class crea_room_info():
+    """A container to help with the admin !create command, since it's a "fragmented" command
+    it need to stock some data
+
+    (yes, I know about named tuple, but modifying value in them is bothersome and
+    I didn't felt like using a dict, so a class it is :p)
+    """
+    def __init__(self,channel,waiting_for,inst,x,y,z):
+        self.channel     = channel
+        self.waiting_for = waiting_for
+        self.inst        = inst
+        self.x           = x
+        self.y           = y
+        self.z           = z
+
 def load_player(player_id):
     global players
     """load a player object in the players dict with the player_id key
@@ -82,6 +97,20 @@ def desc_room(player_id):
                 r.append('\n')
         return ''.join(r)
     else :return "`! inexisting room !`\n(contact a admin, htf did you get here ?)"
+
+def desc_room_admin(inst,x,y,z):
+    """return a description of the room ready to be send to a admin
+    """
+    if (x,y,z) in world[inst]:
+        room = world[inst][x,y,z]
+        r = [(x,y,z).__repr__(),'\n',room.desc]
+        if len(room.players)>0:#there can be nobody, since a admin is not physicaly present in the world
+            r.append('\nAre also present in the room :\n')
+            for player_in_room in room.players:
+                r.append(players[player_in_room].pseudo)
+                r.append('\n')
+        return ''.join(r)
+    else :return "`! inexisting room !`"
 
 def movement(player_id,d):
     """handle the movement logic of the player
@@ -210,6 +239,9 @@ def cmd_interpreter(player_id,text,msg):
 
 with open('world.txt', 'r') as fichier:
     world.update(eval(fichier.read()))
+    
+with open('admins.txt', 'r') as fichier:
+    admins=(eval(fichier.read()))
 
 Path('./players').mkdir(exist_ok=True)    
 for p in os.listdir('./players'):
@@ -239,6 +271,7 @@ async def on_ready():
 
 @client.event #event decorator/wrapper
 async def on_message(message):
+    global CREA_ROOM_INFO
     
     try : #To have a idea of what's going on,
           #to comment out if you actually have some amount of activity on your mud
@@ -262,7 +295,7 @@ async def on_message(message):
                         async with message.channel.typing():
                             await message.channel.send(cmd_interpreter(message))  
                         
-                #First connexion :
+                #First connexion :desc,exits=set(),players=set())
                 else:
                     players_channels[player_id] = message.channel
                     #No charactere creation as is, if you want one you should put it here
@@ -283,7 +316,18 @@ async def on_message(message):
             #        await message.channel.send(crea_FR(message))
 
         elif str(message.author) in admins:#admins is a set, so hashtable make this pretty fast
-            if ("!quit" == msg) :
+            if (not CREA_ROOM_INFO is None)and(message.channel==CREA_ROOM_INFO.channel):
+                if CREA_ROOM_INFO.waiting_for==WAITING_DESC:
+                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z]=room(msg)
+                    CREA_ROOM_INFO.waiting_for=WAITING_EXITS
+                    await message.channel.send(f'the room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
+                elif CREA_ROOM_INFO.waiting_for==WAITING_EXITS:
+                    exits=msg.split(',')
+                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z].exits=set([short_to_directions[d] for d in exits])
+                    CREA_ROOM_INFO=None
+                    await message.channel.send(f'the room now have the following exits :\n{exits}')
+
+            elif ("!quit" == msg) :
                 #Disconnect your bot.
                 await message.channel.send('Disconnecting.')
                 await client.close()
@@ -317,7 +361,61 @@ async def on_message(message):
                     with open('admins.txt', 'w') as fichier:
                         fichier.write(admins.__repr__())
                     await message.channel.send(f'{pseudo} is now a admin.')
-            
+                    
+            elif msg.startswith('!create '):
+                print('oui ?')
+                coord = msg[8:]
+                try:
+                    coords=coord.split(',')
+                    INST=int(coords[0])
+                    X=int(coords[1])
+                    Y=int(coords[2])
+                    Z=int(coords[3])
+                    CREA_ROOM_INFO = crea_room_info(message.channel,WAITING_DESC,INST,X,Y,Z)
+                    await message.channel.send(f'A room as been created in {INST} {X},{Y},{Z}, what should the description be ?')
+                except:await message.channel.send('Incorrect syntax.')
+
+            elif msg.startswith('!desc '):
+                #syntax : !desc inst,x,y,z desc
+                #change the description of the room at inst,x,y,z
+                blank_index = msg[6:].find(' ')+7
+                coord = msg[6:blank_index]
+                try:
+                    coords=coord.split(',')
+                    INST=int(coords[0])
+                    X=int(coords[1])
+                    Y=int(coords[2])
+                    Z=int(coords[3])
+                    desc=msg[blank_index:]
+                    world[INST][X,Y,Z].desc=desc
+                    await message.channel.send(f'the room at {INST} {X},{Y},{Z} now have the following description :\n{desc}')
+                except:await message.channel.send('Incorrect syntax.')
+
+            elif msg.startswith('!exits '):
+                #syntax : !exits inst,x,y,z exits
+                #change the exits of the room at inst,x,y,z
+                blank_index = msg[7:].find(' ')+8
+                coord = msg[7:blank_index]
+                #try:
+                coords=coord.split(',')
+                INST=int(coords[0])
+                X=int(coords[1])
+                Y=int(coords[2])
+                Z=int(coords[3])
+                exits=msg[blank_index:].split(',')
+                world[INST][X,Y,Z].exits=set([short_to_directions[d] for d in exits])
+                await message.channel.send(f'the room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
+                #except:await message.channel.send('Incorrect syntax.\n(!exits inst,x,y,z exits ; (n,e,s,w,u,d))')
+
+            elif msg.startswith('!look '):
+                #syntax : !look inst,x,y,z
+                #return what a player would see of the room
+                coord = msg[6:]
+                try:
+                    coords=coord.split(',')
+                    await message.channel.send(desc_room_admin(int(coords[0]),int(coords[1]),int(coords[2]),int(coords[3])))
+                except:await message.channel.send('Incorrect syntax.\n(!look inst,x,y,z)')
+
         else:
             if ("!who" == msg):
                 #print the pseudo of everyone online in the mud.

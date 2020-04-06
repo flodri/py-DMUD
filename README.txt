@@ -16,7 +16,7 @@ Changelog :
     - a !exits command to change a room exits
     - a !desc command to change a room desc
     - a !look command, to allow a admin to see the room as if he was a player inside it
-  - fixed me being stupid and not initialising some stuff wich made most admin commands bug
+  - fixed me being stupid and not initialising some stuff which made most admin commands bug
 0.1.6 (04-04-2020) 
   - thanks to rrebrick who made me notice it, there's no need anymore to type your bot username in some part of MAIN.py
 0.1.5 (31-03-2020):

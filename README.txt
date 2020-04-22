@@ -11,7 +11,7 @@ If you want access to admin commands put your full discord pseudo in the admins 
 
 Changelog :
 0.2.1 (22-04-2020)
-  - some cleaning, and the who command is now faster and more readable
+  - some cleaning, and the who and !who commands are now faster and more readable
 0.2.0 (06-04-2020)
   - I finally added the only update I kinda promised, OLC stuff, to be precise :
     - a !create command, to create a room to the passed coordinates

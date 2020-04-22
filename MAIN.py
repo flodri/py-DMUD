@@ -183,6 +183,7 @@ def cmd_interpreter(player_id,text,msg):
     s/south : if possible, move the player in said direction
     w/west  : if possible, move the player in said direction
     u/up    : if possible, move the player in said direction
+    d/down  : if possible, move the player in said direction
     """
     global players,world,toSend
     if (text == "link start"):
@@ -212,9 +213,8 @@ def cmd_interpreter(player_id,text,msg):
 
     ### The who command :
     elif text=='who':
-        who=[]
-        for p in connected:who.append(players[p].pseudo)
-        return str(len(who))+'\n'+'\n'.join(who)
+        who_list=[players[player_id].pseudo for player_id in connected]
+        return str(len(who_list))+'\n'+'\n'.join(who_list)
     
     ### The movements commands :
     d=False
@@ -363,7 +363,6 @@ async def on_message(message):
                     await message.channel.send(f'{pseudo} is now a admin.')
                     
             elif msg.startswith('!create '):
-                print('oui ?')
                 coord = msg[8:]
                 try:
                     coords=coord.split(',')

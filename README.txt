@@ -12,6 +12,9 @@ If you want access to admin commands put your full discord pseudo in the admins 
 Changelog :
 0.2.3 (30-04-2020):
   - fixed a bug which prevented players from connecting again after logging out
+  - added the help command which return a link to the default command list of py-DMUD
+  (I don't know why I didn't add it sooner)
+  - some more documentation for the room and player class
 0.2.2 (30-04-2020):
   - fixed the server !who command
 0.2.1 (22-04-2020)

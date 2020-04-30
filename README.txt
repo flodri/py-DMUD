@@ -1,4 +1,4 @@
-Version : 0.2.1 (22-04-2020) 
+Version : 0.2.2 (30-04-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -10,6 +10,8 @@ If you want access to admin commands put your full discord pseudo in the admins 
 (you'll be able to add admins with the !admin comand after that)
 
 Changelog :
+0.2.2 (30-04-2020):
+  - fixed the server !who command
 0.2.1 (22-04-2020)
   - some cleaning, and the who and !who commands are now faster and more readable
 0.2.0 (06-04-2020)

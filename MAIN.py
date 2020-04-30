@@ -419,7 +419,7 @@ async def on_message(message):
             if ("!who" == msg):
                 #print the pseudo of everyone online in the mud.
                 who_list=[players[player_id].pseudo for player_id in connected]
-                return str(len(who_list))+'\n'+'\n'.join(who_list)
+                await message.channel.send(str(len(who_list))+'\n'+'\n'.join(who_list))
                 
 #client.loop.create_task(background_task())
 client.loop.create_task(background_toSend())

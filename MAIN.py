@@ -293,7 +293,7 @@ async def on_message(message):
                         players_channels[player_id] = message.channel
                         connected.add(player_id)
                         async with message.channel.typing():
-                            await message.channel.send(cmd_interpreter(message))  
+                            await message.channel.send(cmd_interpreter(player_id,text,message))  
                         
                 #First connexion :desc,exits=set(),players=set())
                 else:

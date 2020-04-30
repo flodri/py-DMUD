@@ -6,7 +6,10 @@ from pathlib import Path
 from init import *
 
 class room():
-    """The class used to represent a room
+    """The class used to represent a room.
+    desc is a str containing the room description
+    exits is a set containing the exits, they are represented by the cardinal constants in init.py
+    players is set containing the id of players in the room
     """
     def __init__(self,desc,exits=set(),players=set()):
         self.desc    = desc
@@ -16,7 +19,11 @@ class room():
         return f'room(**{self.__dict__.__repr__()})'
 
 class player():
-    """The class used to represend a player
+    """The class used to represend a player.
+    idt is the discord id of the player, since it's guarented to be unique, it's re-used
+    x,y, and z are int and represent the position of the player
+    inst can be what you whant and correspond the instance id the player is in.
+    pseudo is a str which represent the pseudonym of the player
     """
     def __init__(self,idt,x,y,z,inst,pseudo):
         self.idt    = idt
@@ -26,7 +33,8 @@ class player():
         self.inst   = inst
         self.pseudo = pseudo
     def save(self):
-        """Save player data
+        """Save player data,
+        by default in the players folder under a file with the player id.
         """
         with open(f'players/{self.idt}.txt', 'w') as fichier:
             fichier.write(self.__repr__())
@@ -178,6 +186,7 @@ def cmd_interpreter(player_id,text,msg):
     -       : send what folows to others in the room
     look    : return the room description
     who     : return a list of who's online
+    help    : return a link to the default command list of py-DMUD
     n/north : if possible, move the player in said direction
     e/est   : if possible, move the player in said direction
     s/south : if possible, move the player in said direction
@@ -215,6 +224,10 @@ def cmd_interpreter(player_id,text,msg):
     elif text=='who':
         who_list=[players[player_id].pseudo for player_id in connected]
         return str(len(who_list))+'\n'+'\n'.join(who_list)
+    
+    ### The help command :
+    elif text=='help':
+        return'https://github.com/flodri/py-DMUD/wiki/command-list'
     
     ### The movements commands :
     d=False

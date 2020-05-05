@@ -1,4 +1,4 @@
-Version : 0.2.3 (30-04-2020) 
+Version : 0.2.4 (05-05-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -14,6 +14,8 @@ here is the wiki : https://github.com/flodri/py-DMUD/wiki
 and here is my discord server : https://discord.gg/gbEdcxW
 
 Changelog :
+0.2.4 (05-05-2020):
+  - fixed the "!save" and "!save" quit commands
 0.2.3 (30-04-2020):
   - fixed a bug which prevented players from connecting again after logging out
   - added the help command which return a link to the default command list of py-DMUD

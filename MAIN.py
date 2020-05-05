@@ -348,14 +348,14 @@ async def on_message(message):
                 
             elif ("!save" == msg):
                 #Save everything.
-                for p in players:p.save()
+                for p in players:players[p].save()
                 with open('world.txt', 'w') as fichier:
                     fichier.write(world.__repr__())
                 await message.channel.send('Save completed.')
                     
             elif ("!save quit" == msg):
                 #Save everything, then disconnect your bot.
-                for p in players:p.save()
+                for p in players:players[p].save()
                 with open('world.txt', 'w') as fichier:
                     fichier.write(world.__repr__())
                 await message.channel.send('Save completed.\nDisconnecting')

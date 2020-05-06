@@ -1,4 +1,4 @@
-Version : 0.2.4 (05-05-2020) 
+Version : 0.3.0 (06-05-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -14,6 +14,16 @@ here is the wiki : https://github.com/flodri/py-DMUD/wiki
 and here is my discord server : https://discord.gg/gbEdcxW
 
 Changelog :
+0.3.0 (06-05-2020):
+  - "!create" now send a warning when there is already a room at the specified coordinates instead of overwriting it.
+  - added the "!del" command, it delete a room and all exits leading to it
+  - fixed some Typo in the admins commands messages
+  - greatly improved the readability (and a bit the perf) of the warn_leaving and warn_coming functions
+  - warn_coming() and warn_leaving() are now methodes of the room() class
+    which avoid fetching the room in the world dict multiples times, resulting in better perf.
+  - greatly improved the readability of the movement() function
+  - added the discord specific ability to emulate commands with reactions, which allow navigation of the world
+    with only the mouse/touchscreen (this is the real gem of this update), thanks to Itsformetowrite for the idea.
 0.2.4 (05-05-2020):
   - fixed the "!save" and "!save" quit commands
 0.2.3 (30-04-2020):

@@ -15,8 +15,27 @@ class room():
         self.desc    = desc
         self.exits   = exits
         self.players = players
+        
+    def warn_coming(self,player_id):
+        global toSend
+        """if there is others players in the room player_id went,
+        warn them player_id entered
+        """
+        p = players[player_id]
+        for player_in_room in self.players:
+            toSend.append((player_in_room,f'{players[player_id].pseudo} just entered the room.'))
+            
+    def warn_leaving(self,player_id,d): #d for direction
+        global toSend
+        """if there was others players in the room player_id was,
+        warn them player_id left
+        """
+        for player_in_room in self.players:#if .players is empty, the for loop is not executed
+            toSend.append((player_in_room,f"{players[player_id].pseudo} just left {directions_to_text[d]}"))
+                
     def __repr__(self):
         return f'room(**{self.__dict__.__repr__()})'
+
 
 class player():
     """The class used to represend a player.
@@ -32,14 +51,17 @@ class player():
         self.z      = z
         self.inst   = inst
         self.pseudo = pseudo
+        
     def save(self):
         """Save player data,
         by default in the players folder under a file with the player id.
         """
         with open(f'players/{self.idt}.txt', 'w') as fichier:
             fichier.write(self.__repr__())
+            
     def __repr__(self):
         return f'player(**{self.__dict__.__repr__()})'
+
 
 class crea_room_info():
     """A container to help with the admin !create command, since it's a "fragmented" command
@@ -61,33 +83,7 @@ def load_player(player_id):
     """load a player object in the players dict with the player_id key
     """
     with open(f'players/{player_id}.txt', 'r') as fichier:
-        players[player_id]=eval(fichier.read())
-
-def warn_coming(player_id):
-    global toSend
-    """if there is others players in the room player_id went,
-    warn them player_id entered
-    """
-    p = players[player_id]
-    msg = f'{players[player_id].pseudo} just entered the room.'
-    for player_in_room in world[p.inst][p.x,p.y,p.z].players: #Never empty, there at least the who's now in
-        if player_in_room!=player_id:toSend.append((player_in_room,msg))
-
-def warn_leaving(player_id,d): #d for direction
-    global toSend
-    """if there was others players in the room player_id was,
-    warn them player_id left
-    """
-    p = players[player_id]
-    for player_in_room in world[p.inst][p.x,p.y,p.z].players: #Never empty, there's at least the one leaving
-        if player_in_room!=player_id:
-            #for just 2 string, + is faster than .join
-            if   d==NORTH:toSend.append((player_in_room,players[player_id].pseudo+" just left to the north."))
-            elif d==SOUTH:toSend.append((player_in_room,players[player_id].pseudo+" just left to the south."))
-            elif d==EST  :toSend.append((player_in_room,players[player_id].pseudo+" just left to the est."))
-            elif d==WEST :toSend.append((player_in_room,players[player_id].pseudo+" just left to the west."))  
-            elif d==UP   :toSend.append((player_in_room,players[player_id].pseudo+" just left up."))
-            elif d==DOWN :toSend.append((player_in_room,players[player_id].pseudo+" just left down."))          
+        players[player_id]=eval(fichier.read())         
 
 def desc_room(player_id):
     """return a description of the room ready to be send to the player
@@ -119,66 +115,29 @@ def desc_room_admin(inst,x,y,z):
                 r.append('\n')
         return ''.join(r)
     else :return "`! inexisting room !`"
-
+    
 def movement(player_id,d):
     """handle the movement logic of the player
     """
     global players,world
-    p=players[player_id]
-    if   d==NORTH:
-        if NORTH in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.remove(player_id)
-            players[player_id].y+=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go North."
-    elif d==EST  :
-        if EST in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-            players[player_id].x+=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go Est."
-    elif d==SOUTH:
-        if SOUTH in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-            players[player_id].y-=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go South."
-    elif d==WEST :
-        if WEST in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-            players[player_id].x-=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go West."
-    elif d==UP   :
-        if UP in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-            players[player_id].z+=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go Up."
-    elif d==DOWN :
-        if DOWN in world[p.inst][p.x,p.y,p.z].exits:
-            warn_leaving(player_id,d)
-            world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-            players[player_id].z-=1
-            world[p.inst][p.x,p.y,p.z].players.add(player_id)
-            warn_coming(player_id)
-            return desc_room(player_id)
-        else:return "You can't go Down."
+    player = players[player_id]
+    room = world[player.inst][player.x,player.y,player.z]
+    if d in room.exits:
+        room.players.remove(player_id)
+        room.warn_leaving(player_id,d)
+        print(f'{room.players} 1')
+        if   d==NORTH:player.y+=1
+        elif d==EST  :player.x+=1
+        elif d==SOUTH:player.y-=1
+        elif d==WEST :player.x-=1
+        elif d==UP   :player.z+=1
+        elif d==DOWN :player.z-=1
+        room = world[player.inst][player.x,player.y,player.z]
+        room.warn_coming(player_id)
+        room.players.add(player_id)
+        print(f'{room.players} 2')
+        return desc_room(player_id),[directions_to_emoji[d]for d in room.exits]
+    else:return f"You can't go {directions_to_text[d]}.",False
 
 def cmd_interpreter(player_id,text,msg):
     """Implement the folowing commands in order :
@@ -197,37 +156,38 @@ def cmd_interpreter(player_id,text,msg):
     global players,world,toSend
     if (text == "link start"):
         p = players[player_id]
-        world[p.inst][p.x,p.y,p.z].players.add(player_id)
-        return ("`**WELCOME !**`\n> Based on py-DMUD by Flodri (discord : Flodri#5261). See <https://github.com/flodri/py-DMUD>\n\n" + desc_room(player_id))
+        room = world[p.inst][p.x,p.y,p.z]
+        room.players.add(player_id)
+        return ("`**WELCOME !**`\n> Based on py-DMUD by Flodri (discord : Flodri#5261). See <https://github.com/flodri/py-DMUD>\n\n" + desc_room(player_id)),[directions_to_emoji[d]for d in room.exits]
     elif (text == "logout") and (player_id in connected):
         p = players[player_id]
         world[p.inst][p.x,p.y,p.z].players.discard(player_id)
         connected.discard(player_id)
-        return ("`Successfully logged out.`")
+        return "`Successfully logged out.`",False
 
     ### The '-' command :
     if text.startswith('-'):
         p = players[player_id]
         sendTo = world[p.inst][p.x,p.y,p.z].players.copy()
         sendTo.discard(player_id)
-        if len(sendTo)==0:return "Nobody can hear you as you are alone."
+        if len(sendTo)==0:return "Nobody can hear you as you are alone.",False
         else:
             msg=f'`{players[player_id].pseudo} : {str(msg.content)[1:]}`'
             for player_in_room in sendTo:toSend.append((player_in_room,msg))
-            return msg
+            return msg,False
         
     ### The look command :
     elif text=='look':
-        return desc_room(player_id)
+        return desc_room(player_id),False#TODO, change the False by the actual emojis
 
     ### The who command :
     elif text=='who':
         who_list=[players[player_id].pseudo for player_id in connected]
-        return str(len(who_list))+'\n'+'\n'.join(who_list)
+        return str(len(who_list))+'\n'+'\n'.join(who_list),False
     
     ### The help command :
     elif text=='help':
-        return'https://github.com/flodri/py-DMUD/wiki/command-list'
+        return'https://github.com/flodri/py-DMUD/wiki/command-list',False
     
     ### The movements commands :
     d=False
@@ -240,7 +200,7 @@ def cmd_interpreter(player_id,text,msg):
     if d:return movement(player_id,d)
 
     #if the command is not recognised :
-    return '?'
+    return '?',False
 
 
 
@@ -281,7 +241,23 @@ async def background_toSend():
 @client.event #event decorator/wrapper
 async def on_ready():
     print(f'Logged on as {client.user}')
-
+    
+@client.event #event decorator/wrapper
+async def on_reaction_add(reaction, user):
+    if user != client.user:
+        message = reaction.message
+        if str(message.channel)[0:20]=='Direct Message with ':
+            text = reaction_to_command.get(reaction.emoji)
+            if text is None:await message.channel.send('?')
+            else:
+                player_id = str(user.id)
+                if player_id in connected:
+                    to_return,reactions = cmd_interpreter(player_id,text,message)
+                    async with message.channel.typing():
+                        msg = await message.channel.send(to_return)
+                    if reactions:
+                        for emoji in reactions:await msg.add_reaction(emoji)
+    
 @client.event #event decorator/wrapper
 async def on_message(message):
     global CREA_ROOM_INFO
@@ -306,7 +282,10 @@ async def on_message(message):
                         players_channels[player_id] = message.channel
                         connected.add(player_id)
                         async with message.channel.typing():
-                            await message.channel.send(cmd_interpreter(player_id,text,message))  
+                            to_return,reactions = cmd_interpreter(player_id,text,message)
+                        msg = await message.channel.send(to_return)
+                        if reactions:
+                            for emoji in reactions:await msg.add_reaction(emoji)
                         
                 #First connexion :desc,exits=set(),players=set())
                 else:
@@ -316,12 +295,18 @@ async def on_message(message):
                     players[player_id]=player(player_id,0,0,0,0,str(message.author))
                     connected.add(player_id)
                     async with message.channel.typing():
-                        await message.channel.send(cmd_interpreter(player_id,text,message))
+                        to_return,reactions = cmd_interpreter(player_id,text,message)
+                    msg = await message.channel.send(to_return)
+                    if reactions:
+                        for emoji in reactions:await msg.add_reaction(emoji)
 
             #If not "link start" and the player is co, we interprete :
             elif player_id in connected:
                 async with message.channel.typing():
-                    await message.channel.send(cmd_interpreter(player_id,text,message))
+                    to_return,reactions = cmd_interpreter(player_id,text,message)
+                msg = await message.channel.send(to_return)
+                if reactions:
+                    for emoji in reactions:await msg.add_reaction(emoji)
             #If not "link start" is not co, we check if we're creating a caracter, if yes interprete acordingly
             #otherwise ignore :
             #elif etat.get(player_id) <=-1:
@@ -333,12 +318,12 @@ async def on_message(message):
                 if CREA_ROOM_INFO.waiting_for==WAITING_DESC:
                     world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z]=room(msg)
                     CREA_ROOM_INFO.waiting_for=WAITING_EXITS
-                    await message.channel.send(f'the room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
+                    await message.channel.send(f'The room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
                 elif CREA_ROOM_INFO.waiting_for==WAITING_EXITS:
                     exits=msg.split(',')
                     world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z].exits=set([short_to_directions[d] for d in exits])
                     CREA_ROOM_INFO=None
-                    await message.channel.send(f'the room now have the following exits :\n{exits}')
+                    await message.channel.send(f'The room now have the following exits :\n{exits}')
 
             elif ("!quit" == msg) :
                 #Disconnect your bot.
@@ -383,8 +368,10 @@ async def on_message(message):
                     X=int(coords[1])
                     Y=int(coords[2])
                     Z=int(coords[3])
-                    CREA_ROOM_INFO = crea_room_info(message.channel,WAITING_DESC,INST,X,Y,Z)
-                    await message.channel.send(f'A room as been created in {INST} {X},{Y},{Z}, what should the description be ?')
+                    if(world.get(INST)==None)or(world[INST].get((X,Y,Z))==None):
+                        CREA_ROOM_INFO = crea_room_info(message.channel,WAITING_DESC,INST,X,Y,Z)
+                        await message.channel.send(f'A room as been created in {INST} {X},{Y},{Z}, what should the description be ?')
+                    else:await message.channel.send(f"The room at {INST} {X},{Y},{Z} already exist,\nyou may change it's description or exits with the !desc and !exits commands.")
                 except:await message.channel.send('Incorrect syntax.')
 
             elif msg.startswith('!desc '):
@@ -400,7 +387,7 @@ async def on_message(message):
                     Z=int(coords[3])
                     desc=msg[blank_index:]
                     world[INST][X,Y,Z].desc=desc
-                    await message.channel.send(f'the room at {INST} {X},{Y},{Z} now have the following description :\n{desc}')
+                    await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following description :\n{desc}')
                 except:await message.channel.send('Incorrect syntax.')
 
             elif msg.startswith('!exits '):
@@ -416,17 +403,42 @@ async def on_message(message):
                 Z=int(coords[3])
                 exits=msg[blank_index:].split(',')
                 world[INST][X,Y,Z].exits=set([short_to_directions[d] for d in exits])
-                await message.channel.send(f'the room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
+                await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
                 #except:await message.channel.send('Incorrect syntax.\n(!exits inst,x,y,z exits ; (n,e,s,w,u,d))')
 
             elif msg.startswith('!look '):
                 #syntax : !look inst,x,y,z
-                #return what a player would see of the room
+                #send what a player would see of the room
                 coord = msg[6:]
                 try:
                     coords=coord.split(',')
                     await message.channel.send(desc_room_admin(int(coords[0]),int(coords[1]),int(coords[2]),int(coords[3])))
                 except:await message.channel.send('Incorrect syntax.\n(!look inst,x,y,z)')
+
+            elif msg.startswith('!del '):
+                #syntax : !del inst,x,y,z
+                #delete the room at inst,x,y,z and remove exits leading to it
+                coord = msg[5:]
+                try:
+                    coords=coord.split(',')
+                    INST=int(coords[0])
+                    X=int(coords[1])
+                    Y=int(coords[2])
+                    Z=int(coords[3])
+                    if(world.get(INST)==None)or(world[INST].get((X,Y,Z))==None):
+                        await message.channel.send(f'There is no room at {INST} {X},{Y},{Z}.')
+                    else:
+                        exits = world[INST][X,Y,Z].exits
+                        del world[INST][X,Y,Z]
+                        for e in exits:
+                            if   e==NORTH:world[INST][X,Y+1,Z].exits.discard(SOUTH)
+                            elif e==EST  :world[INST][X+1,Y,Z].exits.discard(WEST)
+                            elif e==SOUTH:world[INST][X,Y-1,Z].exits.discard(NORTH)
+                            elif e==WEST :world[INST][X-1,Y,Z].exits.discard(EST)
+                            elif e==UP   :world[INST][X,Y,Z+1].exits.discard(DOWN)
+                            elif e==DOWN :world[INST][X,Y,Z-1].exits.discard(UP)
+                        await message.channel.send(f'The room at {INST} {X},{Y},{Z} has been deleted.')
+                except:await message.channel.send('Incorrect syntax.')
 
         else:
             if ("!who" == msg):

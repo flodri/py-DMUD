@@ -11,10 +11,11 @@ class room():
     exits is a set containing the exits, they are represented by the cardinal constants in init.py
     players is set containing the id of players in the room
     """
-    def __init__(self,desc,exits=set(),players=set()):
+    def __init__(self,desc,exits=None,players=None):
         self.desc    = desc
-        self.exits   = exits
-        self.players = players
+        #see https://github.com/flodri/py-DMUD/issues/9
+        if exits   is None: self.exits   = set()
+        if players is None: self.players = set()
         
     def warn_coming(self,player_id):
         global toSend

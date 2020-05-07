@@ -125,7 +125,6 @@ def movement(player_id,d):
     if d in room.exits:
         room.players.remove(player_id)
         room.warn_leaving(player_id,d)
-        print(f'{room.players} 1')
         if   d==NORTH:player.y+=1
         elif d==EST  :player.x+=1
         elif d==SOUTH:player.y-=1
@@ -135,7 +134,6 @@ def movement(player_id,d):
         room = world[player.inst][player.x,player.y,player.z]
         room.warn_coming(player_id)
         room.players.add(player_id)
-        print(f'{room.players} 2')
         return desc_room(player_id),[directions_to_emoji[d]for d in room.exits]
     else:return f"You can't go {directions_to_text[d]}.",False
 

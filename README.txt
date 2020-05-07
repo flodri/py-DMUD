@@ -22,6 +22,7 @@ Changelog :
   - warn_coming() and warn_leaving() are now methodes of the room() class
     which avoid fetching the room in the world dict multiples times, resulting in better perf.
   - greatly improved the readability of the movement() function
+  - renamed the room and player class to room_obj and player_obj to avoid confusion in some part of the code
   - added the discord specific ability to emulate commands with reactions, which allow navigation of the world
     with only the mouse/touchscreen (this is the real gem of this update), thanks to Itsformetowrite for the idea.
 0.2.4 (05-05-2020):

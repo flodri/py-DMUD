@@ -5,7 +5,7 @@
 from pathlib import Path
 from init import *
 
-class room():
+class room_obj():
     """The class used to represent a room.
     desc is a str containing the room description
     exits is a set containing the exits, they are represented by the cardinal constants in init.py
@@ -15,7 +15,9 @@ class room():
         self.desc    = desc
         #see https://github.com/flodri/py-DMUD/issues/9
         if exits   is None: self.exits   = set()
+        else:self.exits=exits
         if players is None: self.players = set()
+        else:self.players=players
         
     def warn_coming(self,player_id):
         global toSend
@@ -35,10 +37,10 @@ class room():
             toSend.append((player_in_room,f"{players[player_id].pseudo} just left {directions_to_text[d]}"))
                 
     def __repr__(self):
-        return f'room(**{self.__dict__.__repr__()})'
+        return f'room_obj(**{self.__dict__.__repr__()})'
 
 
-class player():
+class player_obj():
     """The class used to represend a player.
     idt is the discord id of the player, since it's guarented to be unique, it's re-used
     x,y, and z are int and represent the position of the player
@@ -61,7 +63,7 @@ class player():
             fichier.write(self.__repr__())
             
     def __repr__(self):
-        return f'player(**{self.__dict__.__repr__()})'
+        return f'player_obj(**{self.__dict__.__repr__()})'
 
 
 class crea_room_info():
@@ -157,6 +159,7 @@ def cmd_interpreter(player_id,text,msg):
         p = players[player_id]
         room = world[p.inst][p.x,p.y,p.z]
         room.players.add(player_id)
+        print(room)
         return ("`**WELCOME !**`\n> Based on py-DMUD by Flodri (discord : Flodri#5261). See <https://github.com/flodri/py-DMUD>\n\n" + desc_room(player_id)),[directions_to_emoji[d]for d in room.exits]
     elif (text == "logout") and (player_id in connected):
         p = players[player_id]
@@ -291,7 +294,7 @@ async def on_message(message):
                     players_channels[player_id] = message.channel
                     #No charactere creation as is, if you want one you should put it here
                     #instead of the cmd_interpreter(message) part
-                    players[player_id]=player(player_id,0,0,0,0,str(message.author))
+                    players[player_id]=player_obj(player_id,0,0,0,0,str(message.author))
                     connected.add(player_id)
                     async with message.channel.typing():
                         to_return,reactions = cmd_interpreter(player_id,text,message)
@@ -315,7 +318,7 @@ async def on_message(message):
         elif str(message.author) in admins:#admins is a set, so hashtable make this pretty fast
             if (not CREA_ROOM_INFO is None)and(message.channel==CREA_ROOM_INFO.channel):
                 if CREA_ROOM_INFO.waiting_for==WAITING_DESC:
-                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z]=room(msg)
+                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z]=room_obj(msg)
                     CREA_ROOM_INFO.waiting_for=WAITING_EXITS
                     await message.channel.send(f'The room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
                 elif CREA_ROOM_INFO.waiting_for==WAITING_EXITS:

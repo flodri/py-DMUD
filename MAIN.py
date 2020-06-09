@@ -168,7 +168,7 @@ def movement(player_id, d):
     else: return f"You can't go {directions_to_text[d]}.", False
 
 
-def cmd_interpreter(player_id, text,msg):
+def cmd_interpreter(player_id, text, msg):
     """Implement the folowing commands in order :
     logout  : disconnect the player
     -       : send what folows to others in the room
@@ -270,7 +270,6 @@ async def background_toSend():
         except:
             print("!!!!!!! backgroud_toSend is crashing !!!!!!!'\n")
             await asyncio.sleep(0.1)
-            pass
 
 
 @client.event  # event decorator/wrapper
@@ -280,6 +279,8 @@ async def on_ready():
 
 @client.event  # event decorator/wrapper
 async def on_reaction_add(reaction, user):
+    """If a player add a reaction, emule the corresponding command
+    """
     if user != client.user:
         message = reaction.message
         if str(message.channel)[0:20] == 'Direct Message with ':
@@ -360,7 +361,7 @@ async def on_message(message):
                         await message.channel.send(f'The room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
                     elif MENU_CMD_INFO.waiting_for == WAITING_EXITS:
                         exits = msg.split(',')
-                        world[MENU_CMD_INFO.inst][MENU_CMD_INFO.x, MENU_CMD_INFO.y, MENU_CMD_INFO.z].exits = set([short_to_directions[d] for d in exits])
+                        world[MENU_CMD_INFO.inst][MENU_CMD_INFO.x, MENU_CMD_INFO.y, MENU_CMD_INFO.z].exits = {short_to_directions[d] for d in exits}
                         MENU_CMD_INFO.waiting_for = WAITING_CREATE_OPOSITE_EXITS
                         await message.channel.send(f'The room now have the following exits :\n{exits}\n\nDo you want me to create automaticaly the coresponding exits in the adjacent room ?\n    1) yes\n    2) no')
                     elif MENU_CMD_INFO.waiting_for == WAITING_CREATE_OPOSITE_EXITS:
@@ -369,18 +370,18 @@ async def on_message(message):
                             X = MENU_CMD_INFO.x
                             Y = MENU_CMD_INFO.y
                             Z = MENU_CMD_INFO.z
-                            for exit in world[INST][X, Y, Z].exits:
-                                if   exit == NORTH:
+                            for exit_ in world[INST][X, Y, Z].exits:
+                                if   exit_ == NORTH:
                                     if (X, Y+1, Z) in world[INST]: world[INST][X, Y+1, Z].exits.add(SOUTH)
-                                elif exit == EST  :
+                                elif exit_ == EST  :
                                     if (X+1, Y, Z) in world[INST]: world[INST][X+1, Y, Z].exits.add(WEST)
-                                elif exit == SOUTH:
+                                elif exit_ == SOUTH:
                                     if (X, Y-1, Z) in world[INST]: world[INST][X, Y-1, Z].exits.add(NORTH)
-                                elif exit == WEST :
+                                elif exit_ == WEST :
                                     if (X+1, Y, Z) in world[INST]: world[INST][X+1, Y, Z].exits.add(EST)
-                                elif exit == UP   :
+                                elif exit_ == UP   :
                                     if (X, Y, Z+1) in world[INST]: world[INST][X, Y, Z+1].exits.add(DOWN)
-                                elif exit == DOWN :
+                                elif exit_ == DOWN :
                                     if (X, Y, Z-1) in world[INST]: world[INST][X, Y, Z-1].exits.add(UP)
                             MENU_CMD_INFO = None
                         elif msg == '2': MENU_CMD_INFO = None
@@ -403,7 +404,7 @@ async def on_message(message):
                             X = MENU_CMD_INFO.x
                             Y = MENU_CMD_INFO.y
                             Z = MENU_CMD_INFO.z
-                            world[INST][X, Y, Z].exits = set([short_to_directions[d] for d in exits])
+                            world[INST][X, Y, Z].exits = {short_to_directions[d] for d in exits}
                             MENU_CMD_INFO = None
                             await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
                         except: await message.channel.send('Incorrect syntax.\nexits must be a list like follow :\nn,e,s,w,u,d')
@@ -563,13 +564,13 @@ async def on_message(message):
                     else:
                         exits = world[INST][X, Y, Z].exits
                         del world[INST][X, Y, Z]
-                        for e in exits:
-                            if   e == NORTH: world[INST][X, Y+1, Z].exits.discard(SOUTH)
-                            elif e == EST  : world[INST][X+1, Y, Z].exits.discard(WEST)
-                            elif e == SOUTH: world[INST][X, Y-1, Z].exits.discard(NORTH)
-                            elif e == WEST : world[INST][X-1, Y, Z].exits.discard(EST)
-                            elif e == UP   : world[INST][X, Y, Z+1].exits.discard(DOWN)
-                            elif e == DOWN : world[INST][X, Y, Z-1].exits.discard(UP)
+                        for exit_ in exits:
+                            if   exit_ == NORTH: world[INST][X, Y+1, Z].exits.discard(SOUTH)
+                            elif exit_ == EST  : world[INST][X+1, Y, Z].exits.discard(WEST)
+                            elif exit_ == SOUTH: world[INST][X, Y-1, Z].exits.discard(NORTH)
+                            elif exit_ == WEST : world[INST][X-1, Y, Z].exits.discard(EST)
+                            elif exit_ == UP   : world[INST][X, Y, Z+1].exits.discard(DOWN)
+                            elif exit_ == DOWN : world[INST][X, Y, Z-1].exits.discard(UP)
                         await message.channel.send(f'The room at {INST} {X},{Y},{Z} has been deleted.')
                 except: await message.channel.send('Incorrect syntax.')
 

@@ -18,6 +18,19 @@ class room_obj():
         else:self.exits=exits
         if players is None: self.players = set()
         else:self.players=players
+
+    def check_exit(self,d,inst,x,y,z):
+        """Check if the exits actually lead to a existing room.
+        Return True if yes, otherwise return False.
+        """
+        if   d==NORTH:y+=1
+        elif d==EST  :x+=1
+        elif d==SOUTH:y-=1
+        elif d==WEST :x-=1
+        elif d==UP   :z+=1
+        elif d==DOWN :z-=1
+        if(inst in world)and((x,y,z)in world[inst]):return True
+        return False
         
     def warn_coming(self,player_id):
         global toSend
@@ -61,19 +74,25 @@ class player_obj():
         """
         with open(f'players/{self.idt}.txt', 'w') as fichier:
             fichier.write(self.__repr__())
+
+    def disconnect(self):
+        world[self.inst][self.x,self.y,self.z].players.discard(self.idt)
+        connected.discard(self.idt)
             
     def __repr__(self):
         return f'player_obj(**{self.__dict__.__repr__()})'
 
 
-class crea_room_info():
-    """A container to help with the admin !create command, since it's a "fragmented" command
-    it need to stock some data
+class menu_cmd_info():
+    """A container to help with the admin menu type command like !create,
+    since it's "fragmented" commands it need to stock some data
 
     (yes, I know about named tuple, but modifying value in them is bothersome and
     I didn't felt like using a dict, so a class it is :p)
     """
-    def __init__(self,channel,waiting_for,inst,x,y,z):
+    def __init__(self,menu_command,channel,waiting_for,inst,x,y,z):
+        self.menu_command= menu_command
+        
         self.channel     = channel
         self.waiting_for = waiting_for
         self.inst        = inst
@@ -126,18 +145,20 @@ def movement(player_id,d):
     player = players[player_id]
     room = world[player.inst][player.x,player.y,player.z]
     if d in room.exits:
-        room.players.remove(player_id)
-        room.warn_leaving(player_id,d)
-        if   d==NORTH:player.y+=1
-        elif d==EST  :player.x+=1
-        elif d==SOUTH:player.y-=1
-        elif d==WEST :player.x-=1
-        elif d==UP   :player.z+=1
-        elif d==DOWN :player.z-=1
-        room = world[player.inst][player.x,player.y,player.z]
-        room.warn_coming(player_id)
-        room.players.add(player_id)
-        return desc_room(player_id),[directions_to_emoji[d]for d in room.exits]
+        if room.check_exit(d,player.inst,player.x,player.y,player.z): #while building lot of exits where leading nowhere, which caused problems, so it's better to not assume that there isn't any error with the build exits.
+            room.players.remove(player_id)
+            room.warn_leaving(player_id,d)
+            if   d==NORTH:player.y+=1
+            elif d==EST  :player.x+=1
+            elif d==SOUTH:player.y-=1
+            elif d==WEST :player.x-=1
+            elif d==UP   :player.z+=1
+            elif d==DOWN :player.z-=1
+            room = world[player.inst][player.x,player.y,player.z]
+            room.warn_coming(player_id)
+            room.players.add(player_id)
+            return desc_room(player_id),[directions_to_emoji[d]for d in room.exits]
+        else:return f"The room in {directions_to_text[d]} direction doesn't seem to exist.\nPlease contact a admin.",False
     else:return f"You can't go {directions_to_text[d]}.",False
 
 def cmd_interpreter(player_id,text,msg):
@@ -162,9 +183,7 @@ def cmd_interpreter(player_id,text,msg):
         print(room)
         return ("`**WELCOME !**`\n> Based on py-DMUD by Flodri (discord : Flodri#5261). See <https://github.com/flodri/py-DMUD>\n\n" + desc_room(player_id)),[directions_to_emoji[d]for d in room.exits]
     elif (text == "logout") and (player_id in connected):
-        p = players[player_id]
-        world[p.inst][p.x,p.y,p.z].players.discard(player_id)
-        connected.discard(player_id)
+        players[player_id].disconnect()
         return "`Successfully logged out.`",False
 
     ### The '-' command :
@@ -222,6 +241,11 @@ Path('./players').mkdir(exist_ok=True)
 for p in os.listdir('./players'):
     load_player(p[:-4])
 
+#Make sure everyone is disconnect, so if your game crashed,
+#people aren't still connected when they don't expect it
+for player_id in players:
+    players[player_id].disconnect()
+
 async def background_toSend():
     """Send regularly the messages stored in toSend to the corresponding players
     """
@@ -262,7 +286,7 @@ async def on_reaction_add(reaction, user):
     
 @client.event #event decorator/wrapper
 async def on_message(message):
-    global CREA_ROOM_INFO
+    global MENU_CMD_INFO
     
     try : #To have a idea of what's going on,
           #to comment out if you actually have some amount of activity on your mud
@@ -316,16 +340,63 @@ async def on_message(message):
             #        await message.channel.send(crea_FR(message))
 
         elif str(message.author) in admins:#admins is a set, so hashtable make this pretty fast
-            if (not CREA_ROOM_INFO is None)and(message.channel==CREA_ROOM_INFO.channel):
-                if CREA_ROOM_INFO.waiting_for==WAITING_DESC:
-                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z]=room_obj(msg)
-                    CREA_ROOM_INFO.waiting_for=WAITING_EXITS
-                    await message.channel.send(f'The room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
-                elif CREA_ROOM_INFO.waiting_for==WAITING_EXITS:
-                    exits=msg.split(',')
-                    world[CREA_ROOM_INFO.inst][CREA_ROOM_INFO.x,CREA_ROOM_INFO.y,CREA_ROOM_INFO.z].exits=set([short_to_directions[d] for d in exits])
-                    CREA_ROOM_INFO=None
-                    await message.channel.send(f'The room now have the following exits :\n{exits}')
+            
+            if (not MENU_CMD_INFO is None)and(message.channel==MENU_CMD_INFO.channel):
+                if MENU_CMD_INFO.menu_command == MENU_CMD_CREA_ROOM:
+                    if MENU_CMD_INFO.waiting_for==WAITING_DESC:
+                        world[MENU_CMD_INFO.inst][MENU_CMD_INFO.x,MENU_CMD_INFO.y,MENU_CMD_INFO.z]=room_obj(msg)
+                        MENU_CMD_INFO.waiting_for=WAITING_EXITS
+                        await message.channel.send(f'The room now have the following description :\n{msg}\n\nWhat should be the exits ? (n,e,s,w,u,d)')
+                    elif MENU_CMD_INFO.waiting_for==WAITING_EXITS:
+                        exits=msg.split(',')
+                        world[MENU_CMD_INFO.inst][MENU_CMD_INFO.x,MENU_CMD_INFO.y,MENU_CMD_INFO.z].exits=set([short_to_directions[d] for d in exits])
+                        MENU_CMD_INFO.waiting_for=WAITING_CREATE_OPOSITE_EXITS
+                        await message.channel.send(f'The room now have the following exits :\n{exits}\n\nDo you want me to create automaticaly the coresponding exits in the adjacent room ?\n    1) yes\n    2) no')
+                    elif MENU_CMD_INFO.waiting_for==WAITING_CREATE_OPOSITE_EXITS:
+                        if msg == '1':
+                            I = MENU_CMD_INFO.inst
+                            X = MENU_CMD_INFO.x
+                            Y = MENU_CMD_INFO.y
+                            Z = MENU_CMD_INFO.z
+                            for exit in world[I][X,Y,Z].exits:
+                                if   exit == NORTH:
+                                    if (X,Y+1,Z) in world[I]: world[I][X,Y+1,Z].exits.add(SOUTH)
+                                elif exit == EST  :
+                                    if (X+1,Y,Z) in world[I]: world[I][X+1,Y,Z].exits.add(WEST)
+                                elif exit == SOUTH:
+                                    if (X,Y-1,Z) in world[I]: world[I][X,Y-1,Z].exits.add(NORTH)
+                                elif exit == WEST :
+                                    if (X+1,Y,Z) in world[I]: world[I][X+1,Y,Z].exits.add(EST)
+                                elif exit == UP   :
+                                    if (X,Y,Z+1) in world[I]: world[I][X,Y,Z+1].exits.add(DOWN)
+                                elif exit == DOWN :
+                                    if (X,Y,Z-1) in world[I]: world[I][X,Y,Z-1].exits.add(UP)
+                            MENU_CMD_INFO=None
+                        elif msg == '2':MENU_CMD_INFO=None
+                        else:return 'Please enter either 1 for yes, or 2 for no.'
+                        await message.channel.send('Done.')
+                elif MENU_CMD_INFO.menu_command == MENU_CMD_CHANGE_DESC:
+                    if MENU_CMD_INFO.waiting_for==WAITING_DESC:
+                        INST = MENU_CMD_INFO.inst
+                        X = MENU_CMD_INFO.x
+                        Y = MENU_CMD_INFO.y
+                        Z = MENU_CMD_INFO.z
+                        world[INST][X,Y,Z].desc=msg
+                        MENU_CMD_INFO=None
+                        await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following description :\n{msg}')
+                elif MENU_CMD_INFO.menu_command == MENU_CMD_CHANGE_EXITS:
+                    if MENU_CMD_INFO.waiting_for==WAITING_EXITS:
+                        try:
+                            exits=msg.split(',')
+                            INST = MENU_CMD_INFO.inst
+                            X = MENU_CMD_INFO.x
+                            Y = MENU_CMD_INFO.y
+                            Z = MENU_CMD_INFO.z
+                            world[INST][X,Y,Z].exits=set([short_to_directions[d] for d in exits])
+                            MENU_CMD_INFO=None
+                            print('PROUT')
+                            await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
+                        except:await message.channel.send('Incorrect syntax.\nexits must be a list like follow :\nn,e,s,w,u,d')
 
             elif ("!quit" == msg) :
                 #Disconnect your bot.
@@ -371,7 +442,7 @@ async def on_message(message):
                     Y=int(coords[2])
                     Z=int(coords[3])
                     if(world.get(INST)==None)or(world[INST].get((X,Y,Z))==None):
-                        CREA_ROOM_INFO = crea_room_info(message.channel,WAITING_DESC,INST,X,Y,Z)
+                        MENU_CMD_INFO = menu_cmd_info(MENU_CMD_CREA_ROOM,message.channel,WAITING_DESC,INST,X,Y,Z)
                         await message.channel.send(f'A room as been created in {INST} {X},{Y},{Z}, what should the description be ?')
                     else:await message.channel.send(f"The room at {INST} {X},{Y},{Z} already exist,\nyou may change it's description or exits with the !desc and !exits commands.")
                 except:await message.channel.send('Incorrect syntax.')
@@ -379,34 +450,34 @@ async def on_message(message):
             elif msg.startswith('!desc '):
                 #syntax : !desc inst,x,y,z desc
                 #change the description of the room at inst,x,y,z
-                blank_index = msg[6:].find(' ')+7
-                coord = msg[6:blank_index]
+                coord = msg[6:]
                 try:
                     coords=coord.split(',')
                     INST=int(coords[0])
                     X=int(coords[1])
                     Y=int(coords[2])
                     Z=int(coords[3])
-                    desc=msg[blank_index:]
-                    world[INST][X,Y,Z].desc=desc
-                    await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following description :\n{desc}')
+                    if (INST in world)and((X,Y,Z)in world[INST]):
+                        MENU_CMD_INFO = menu_cmd_info(MENU_CMD_CHANGE_DESC,message.channel,WAITING_DESC,INST,X,Y,Z)
+                        await message.channel.send(f'The current description is this :```\n{world[INST][X,Y,Z].desc}```\nWhat should be the new one ?')
+                    else:await message.channel.send('Incorrect coordinates.\nThis room does not exist.')
                 except:await message.channel.send('Incorrect syntax.')
 
             elif msg.startswith('!exits '):
                 #syntax : !exits inst,x,y,z exits
                 #change the exits of the room at inst,x,y,z
-                blank_index = msg[7:].find(' ')+8
-                coord = msg[7:blank_index]
-                #try:
-                coords=coord.split(',')
-                INST=int(coords[0])
-                X=int(coords[1])
-                Y=int(coords[2])
-                Z=int(coords[3])
-                exits=msg[blank_index:].split(',')
-                world[INST][X,Y,Z].exits=set([short_to_directions[d] for d in exits])
-                await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
-                #except:await message.channel.send('Incorrect syntax.\n(!exits inst,x,y,z exits ; (n,e,s,w,u,d))')
+                coord = msg[7:]
+                try:
+                    coords=coord.split(',')
+                    INST=int(coords[0])
+                    X=int(coords[1])
+                    Y=int(coords[2])
+                    Z=int(coords[3])
+                    if (INST in world)and((X,Y,Z)in world[INST]):
+                        MENU_CMD_INFO = menu_cmd_info(MENU_CMD_CHANGE_EXITS,message.channel,WAITING_EXITS,INST,X,Y,Z)
+                        await message.channel.send(f"The current exits are as follow :\n`{','.join([directions_to_short[d] for d in world[INST][X,Y,Z].exits])}`\nWhat should be the new exits ?")
+                    else:await message.channel.send('Incorrect coordinates.\nThis room does not exist.')
+                except:await message.channel.send('Incorrect syntax.')
 
             elif msg.startswith('!look '):
                 #syntax : !look inst,x,y,z
@@ -417,6 +488,56 @@ async def on_message(message):
                     await message.channel.send(desc_room_admin(int(coords[0]),int(coords[1]),int(coords[2]),int(coords[3])))
                 except:await message.channel.send('Incorrect syntax.\n(!look inst,x,y,z)')
 
+            elif msg.startswith('!map '):
+                try:inst_id = int(msg[5:])
+                except:inst_id = msg[5:]
+                if inst_id in world:
+                    X_MAX = 0
+                    X_MIN = 0
+                    Y_MAX = 0
+                    Y_MIN = 0
+                    for room_id in world[inst_id]:
+                        x,y,z = room_id
+                        if x>X_MAX:X_MAX=x
+                        if x<X_MAX:X_MIN=x
+                        if y>Y_MAX:Y_MAX=y
+                        if y<Y_MIN:Y_MIN=y
+                    length = abs(X_MIN)+1+abs(X_MAX)
+                    height = abs(Y_MIN)+1+abs(Y_MAX)
+                    matrix = [['.' for l in range(length)] for h in range(height)]
+                    #we complete the matrix with rooms :
+                    for room_id in world[inst_id]:
+                        x,y,z = room_id
+                        matrix[y+abs(Y_MIN)][x+abs(X_MIN)]='R'
+                    to_r = ["```\n y\n ^_>x\n\n"]
+
+                    #The line and Y axis :
+                    index = Y_MAX
+                    for line in matrix[::-1]:
+                        if index>=0:to_r.append(f" {index} {' '.join(line)}\n")
+                        else:to_r.append(f"{index} {' '.join(line)}\n")
+                        index -= 1
+                        
+                    #The X axis :
+                    to_r.append('  ')
+                    index = X_MIN
+                    for l in range(length):
+                        if index<0:to_r.append(str(index))
+                        else:to_r.append(' '+str(index))
+                        index+=1
+                    
+                    to_r.append('```')
+                    to_r = ''.join(to_r)
+
+                    #if it's more thans 2000 caracts, well first gg it's a big map, but second we have a probem
+                    #because if just one line is more than 2000 caracts, the map can't be send to discord.
+                    #otherwise we can split and send multiple message.
+                    if len(to_r)>=2000:
+                        print(to_r)
+                        await message.channel.send('Your map is too big, and I have yet to write a correct spliter to send it in multiple part on discord,\nSo for now it have been printed on your terminal.')
+                    else:await message.channel.send(to_r)
+                else:await message.channel.send(f'{inst_id} is not a existing instance')
+                
             elif msg.startswith('!del '):
                 #syntax : !del inst,x,y,z
                 #delete the room at inst,x,y,z and remove exits leading to it

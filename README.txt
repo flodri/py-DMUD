@@ -1,4 +1,4 @@
-Version : 0.3.1 (09-06-2020) 
+Version : 0.3.2 (09-06-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -14,6 +14,8 @@ here is the wiki : https://github.com/flodri/py-DMUD/wiki
 and here is my discord server : https://discord.gg/gbEdcxW
 
 Changelog :
+0.3.2 (09-06-2020):
+  - A lot of cleaning of MAIN.py to make it easier to read and more PEP8 compliant, thanks pycodestyle
 0.3.1 (09-06-2020):
   - added the disconnect methode to the player_obj class, which simplify some part of the code
   - make sure everyone is disconnected when the game start to avoid people being unexpectedly connected

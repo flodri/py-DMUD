@@ -1,4 +1,4 @@
-Version : 0.3.0 (06-05-2020) 
+Version : 0.3.1 (09-06-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -14,6 +14,17 @@ here is the wiki : https://github.com/flodri/py-DMUD/wiki
 and here is my discord server : https://discord.gg/gbEdcxW
 
 Changelog :
+0.3.1 (09-06-2020):
+  - added the disconnect methode to the player_obj class, which simplify some part of the code
+  - make sure everyone is disconnected when the game start to avoid people being unexpectedly connected
+    if your game crashed
+  - added the check_exit methode to the room_oj class
+  - now check if exits actually lead somewhere before moving a player
+  - the admin !exits and !desc commands are now menu based. Not that there is much to select,
+    but it's more intuitive to use since it's now similar to the behavior of !create, 
+    and allow to see the previous descriptions and exits which facilitate editing.
+  - the admin !create command now have a option to automatically create the corresponding oposites
+    exits in the adjacent rooms, simplifying the building process.
 0.3.0 (06-05-2020):
   - "!create" now send a warning when there is already a room at the specified coordinates instead of overwriting it.
   - added the "!del" command, it delete a room and all exits leading to it

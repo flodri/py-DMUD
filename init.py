@@ -16,6 +16,9 @@ WEST  = 4
 UP    = 5
 DOWN  = 6
 
+prefixe        = ''
+prefixe_length = 0
+
 global MENU_CMD_INFO
 
 MENU_CMD_INFO = None

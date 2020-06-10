@@ -246,7 +246,7 @@ with open('admins.txt', 'r') as fichier:
 
 with open('prefixe.txt', 'r') as fichier:
     prefixe = fichier.read()
-prefixe_length = len(prefixe_length)
+prefixe_length = len(prefixe)
 
 Path('./players').mkdir(exist_ok=True)
 for p in os.listdir('./players'):
@@ -302,7 +302,7 @@ async def on_reaction_add(reaction, user):
 
 @client.event  # event decorator/wrapper
 async def on_message(message):
-    global MENU_CMD_INFO
+    global MENU_CMD_INFO, prefixe, prefixe_length #it, don't work if prefixe and prefixe_length aren't global ???
 
     try :  # To have a idea of what's going on,
            # to comment out if you actually have some amount of activity on your mud
@@ -412,14 +412,14 @@ async def on_message(message):
                             MENU_CMD_INFO = None
                             await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
                         except: await message.channel.send('Incorrect syntax.\nexits must be a list like follow :\nn,e,s,w,u,d')
-
-            elif (prefixe + "quit" == msg):
+            
+            elif (prefixe + "quit") == msg:
                 # Disconnect your bot.
                 await message.channel.send('Disconnecting.')
                 await client.close()
                 sys.exit()
 
-            elif (prefixe + "save" == msg):
+            elif (prefixe + "save") == msg:
                 # Save everything.
                 for p in players: players[p].save()
                 with open('world.txt', 'w') as fichier:

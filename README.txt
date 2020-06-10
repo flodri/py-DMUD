@@ -1,4 +1,4 @@
-Version : 0.3.2 (09-06-2020) 
+Version : 0.3.2 (10-06-2020) 
 
 To run this you'll need :
 - to have a discord bot and put his token in the init.py file (some help on that here : https://discordpy.readthedocs.io/en/latest/discord.html)
@@ -14,7 +14,7 @@ here is the wiki : https://github.com/flodri/py-DMUD/wiki
 and here is my discord server : https://discord.gg/gbEdcxW
 
 Changelog :
-0.3.2 (09-06-2020):
+0.3.2 (10-06-2020):
   - A lot of cleaning of MAIN.py to make it easier to read and more PEP8 compliant, thanks pycodestyle
   - every exit var has been renamed exit_ to avoid redefining built-in
   - added the !prefixe command, which change the prefixe for server commands and save it

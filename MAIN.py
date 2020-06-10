@@ -244,6 +244,10 @@ with open('world.txt', 'r') as fichier:
 with open('admins.txt', 'r') as fichier:
     admins = (eval(fichier.read()))
 
+with open('prefixe.txt', 'r') as fichier:
+    prefixe = fichier.read()
+prefixe_length = len(prefixe_length)
+
 Path('./players').mkdir(exist_ok=True)
 for p in os.listdir('./players'):
     load_player(p[:-4])
@@ -409,20 +413,20 @@ async def on_message(message):
                             await message.channel.send(f'The room at {INST} {X},{Y},{Z} now have the following exits :\n{exits}')
                         except: await message.channel.send('Incorrect syntax.\nexits must be a list like follow :\nn,e,s,w,u,d')
 
-            elif ("!quit" == msg):
+            elif (prefixe + "quit" == msg):
                 # Disconnect your bot.
                 await message.channel.send('Disconnecting.')
                 await client.close()
                 sys.exit()
 
-            elif ("!save" == msg):
+            elif (prefixe + "save" == msg):
                 # Save everything.
                 for p in players: players[p].save()
                 with open('world.txt', 'w') as fichier:
                     fichier.write(world.__repr__())
                 await message.channel.send('Save completed.')
 
-            elif ("!save quit" == msg):
+            elif (prefixe + "save quit" == msg):
                 # Save everything, then disconnect your bot.
                 for p in players: players[p].save()
                 with open('world.txt', 'w') as fichier:
@@ -431,9 +435,9 @@ async def on_message(message):
                 await client.close()
                 sys.exit()
 
-            elif msg.startswith('!admin '):
+            elif msg.startswith(prefixe + 'admin '):
                 # add a admin to your game, if he's already admin remove him
-                pseudo = msg[7:]
+                pseudo = msg[prefixe_length + 6:]
                 if pseudo in admins:
                     admins.remove(pseudo)
                     with open('admins.txt', 'w') as fichier:
@@ -444,8 +448,8 @@ async def on_message(message):
                         fichier.write(admins.__repr__())
                     await message.channel.send(f'{pseudo} is now a admin.')
 
-            elif msg.startswith('!create '):
-                coord = msg[8:]
+            elif msg.startswith(prefixe + 'create '):
+                coord = msg[prefixe_length + 7:]
                 try:
                     coords = coord.split(',')
                     INST = int(coords[0])
@@ -458,10 +462,10 @@ async def on_message(message):
                     else: await message.channel.send(f"The room at {INST} {X},{Y},{Z} already exist,\nyou may change it's description or exits with the !desc and !exits commands.")
                 except: await message.channel.send('Incorrect syntax.')
 
-            elif msg.startswith('!desc '):
+            elif msg.startswith(prefixe + 'desc '):
                 # syntax : !desc inst,x, y, z desc
                 # change the description of the room at inst,x, y, z
-                coord = msg[6:]
+                coord = msg[prefixe_length + 5:]
                 try:
                     coords=coord.split(',')
                     INST = int(coords[0])
@@ -474,10 +478,10 @@ async def on_message(message):
                     else: await message.channel.send('Incorrect coordinates.\nThis room does not exist.')
                 except: await message.channel.send('Incorrect syntax.')
 
-            elif msg.startswith('!exits '):
+            elif msg.startswith(prefixe + 'exits '):
                 # syntax : !exits inst,x, y, z exits
                 # change the exits of the room at inst,x, y, z
-                coord = msg[7:]
+                coord = msg[prefixe_length + 6:]
                 try:
                     coords = coord.split(',')
                     INST = int(coords[0])
@@ -490,18 +494,18 @@ async def on_message(message):
                     else: await message.channel.send('Incorrect coordinates.\nThis room does not exist.')
                 except: await message.channel.send('Incorrect syntax.')
 
-            elif msg.startswith('!look '):
+            elif msg.startswith(prefixe + 'look '):
                 # syntax : !look inst,x, y, z
                 # send what a player would see of the room
-                coord = msg[6:]
+                coord = msg[prefixe_length + 5:]
                 try:
                     coords=coord.split(',')
                     await message.channel.send(desc_room_admin(int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])))
                 except: await message.channel.send('Incorrect syntax.\n(!look inst,x,y,z)')
 
-            elif msg.startswith('!map '):
-                try: inst_id = int(msg[5:])
-                except: inst_id = msg[5:]
+            elif msg.startswith(prefixe + 'map '):
+                try: inst_id = int(msg[prefixe_length + 4:])
+                except: inst_id = msg[prefixe_length + 4:]
                 if inst_id in world:
                     X_MAX = 0
                     X_MIN = 0
@@ -549,10 +553,10 @@ async def on_message(message):
                     else: await message.channel.send(to_r)
                 else: await message.channel.send(f'{inst_id} is not a existing instance')
 
-            elif msg.startswith('!del '):
+            elif msg.startswith(prefixe + 'del '):
                 # syntax : !del inst, x, y, z
                 # delete the room at inst,x, y, z and remove exits leading to it
-                coord = msg[5:]
+                coord = msg[prefixe_length + 4:]
                 try:
                     coords = coord.split(',')
                     INST = int(coords[0])
@@ -574,8 +578,16 @@ async def on_message(message):
                         await message.channel.send(f'The room at {INST} {X},{Y},{Z} has been deleted.')
                 except: await message.channel.send('Incorrect syntax.')
 
+            elif msg.startswith(prefixe + 'prefixe '):
+                # syntax : !prefixe new_prefixe
+                prefixe = msg[prefixe_length + 8:]
+                prefixe_length = len(prefixe)
+                with open('prefixe.txt', 'w') as fichier:
+                    fichier.write(prefixe)
+                await message.channel.send(f'Done. The new prefixe is : `{prefixe}`')
+
         else:
-            if ("!who" == msg):
+            if (prefixe + "who" == msg):
                 # print the pseudo of everyone online in the mud.
                 who_list = [players[player_id].pseudo for player_id in connected]
                 await message.channel.send(str(len(who_list))+'\n'+'\n'.join(who_list))
